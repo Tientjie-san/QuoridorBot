@@ -11,9 +11,26 @@ class Quoridor:
         self.player1_fences = 10
         self.player2_fences = 10
 
+    def step(self, action):
+        """returns new state and reward given current state and action"""
+
+        pass
+
+    def reset(self):
+        """"Resets the Quoridor enviroment"""
+        pass
+
     def print_internal_board(self):
         for node in self.board.nodes.values():
             print(node)
+
+    def close(self):
+        """close pygame"""
+        pass
+
+    def render(self):
+        """game vizualisation"""
+        pass
 
     @staticmethod
     def create_board():
@@ -33,6 +50,9 @@ class Quoridor:
         return g
 
     def legal_pawn_moves(self):
+        """
+        Returns legal pawn moves according to the Quoridor rules
+        """
         legal_pawn_moves = []
 
         legal_pawn_moves.extend(node.key for node in self.board.nodes[self.player1_pos].connected_to)
@@ -72,16 +92,12 @@ class Quoridor:
         pass
 
     def legal_actions(self):
+        """
+        Returns all legal actions: pawn moves and fence moves.
+        """
         pass
 
-    def step(self, action):
-        """returns new state and reward given current state and action"""
 
-        pass
-
-    def reset(self):
-        """"Resets the Quoridor enviroment"""
-        pass
 
     def current_state(self):
         """
@@ -93,6 +109,8 @@ class Quoridor:
         - number of fences player 2
         """
         pass
+
+
 
 
 game = Quoridor(9, 9)

@@ -1,5 +1,5 @@
-import numpy as np
-from Graph import Graph
+import random
+from .Graph import Graph
 import copy
 
 
@@ -7,17 +7,14 @@ class Quoridor:
 
     def __init__(self, board_shape: tuple, opponent_agent):
         self.board: Graph = Quoridor.create_board()
-        self.player1_pos = (5, 4)
-        self.player2_pos = (6, 4)
+        self.player1_pos = (0, 4)
+        self.player2_pos = (8, 4)
         self.player1_fences = 10
         self.player2_fences = 10
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
-        self.add_fence((6,4, 'H'))
-        self.add_fence((6,4, 'V'))
-        print(self.legal_pawn_moves(self.player1_pos, self.player2_pos))
-        print(self.legal_pawn_moves(self.player2_pos, self.player1_pos))
-        print(self.legal_fences)
+        self.game_over = False
+        self.reward = 0
 
     def step(self, action):
         """returns new state and reward given current state and action"""
@@ -25,19 +22,31 @@ class Quoridor:
             self.player1_pos = action
             if action[0] == 8:
                 print("player 1 won the game")
-
+                self.game_over = True
         else:
             self.add_fence(action)
             self.player1_fences -= 1
 
+
         #oppenents turn:
-        legal_actions = self.legal_actions()
-        self.render()
-        return
+        legal_actions = self.legal_actions(self.player2_pos, self.player1_pos)
+        legal_actions = legal_actions['pawn_moves'].union(legal_actions['fence_moves'])
+        opp_action = random.choice(list(legal_actions))
+        if len(opp_action) == 2:
+            self.player2_pos = action
+            if action[0] == 0:
+                print("player 2 won the game")
+                self.game_over = True
+
+        else:
+            self.add_fence(opp_action)
+            self.player2_fences -= 1
+        # self.render()
+        return self.current_state()
 
     def reset(self):
         """"Resets the Quoridor enviroment"""
-        self.__init__()
+        self.__init__((9, 9), 1)
 
     def close(self):
         """close pygame"""
@@ -115,7 +124,7 @@ class Quoridor:
             self.board.remove_edge((fence[0] - 1, fence[1]), (fence[0] - 1, fence[1] + 1))
             overlapping_fences = {(fence[0] - 1, fence[1], 'H'), (fence[0] + 1, fence[1], 'V'),
                                   (fence[0] - 1, fence[1], 'V')}
-        print(f"overlapping_fences: {overlapping_fences}")
+
         self.legal_fences -= overlapping_fences
 
         new_legal_fences = set()
@@ -163,7 +172,7 @@ class Quoridor:
 
             legal_pawn_moves.extend(opponent_connected)
 
-        return legal_pawn_moves
+        return set(legal_pawn_moves)
 
     def legal_actions(self, current_player_pos, opponent_pos):
         """
@@ -181,9 +190,15 @@ class Quoridor:
         - fences1: number of fences player 1
         - fences2: number of fences player 2
         - fence_pos: list of fence positions
+        - game_over: boolean
+        - reward: int
         """
-        pass
-
-
-game = Quoridor((9, 9), "poep")
-
+        return {
+            "pos1": self.player1_pos,
+            "pos2": self.player2_pos,
+            "fences1": self.player1_fences,
+            "fences2": self.player2_fences,\
+            "fence_pos": self.fence_pos,
+            "game_over": self.game_over,
+            "reward": self.reward
+        }

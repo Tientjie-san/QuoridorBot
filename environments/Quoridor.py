@@ -1,17 +1,23 @@
 import numpy as np
 from Graph import Graph
+import copy
 
 
 class Quoridor:
 
     def __init__(self, board_shape: tuple, opponent_agent):
         self.board: Graph = Quoridor.create_board()
-        self.player1_pos = (0, 4)
-        self.player2_pos = (8, 4)
+        self.player1_pos = (5, 4)
+        self.player2_pos = (6, 4)
         self.player1_fences = 10
         self.player2_fences = 10
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
+        self.add_fence((6,4, 'H'))
+        self.add_fence((6,4, 'V'))
+        print(self.legal_pawn_moves(self.player1_pos, self.player2_pos))
+        print(self.legal_pawn_moves(self.player2_pos, self.player1_pos))
+        print(self.legal_fences)
 
     def step(self, action):
         """returns new state and reward given current state and action"""
@@ -108,64 +114,64 @@ class Quoridor:
             self.board.remove_edge((fence[0], fence[1]), (fence[0], fence[1] + 1))
             self.board.remove_edge((fence[0] - 1, fence[1]), (fence[0] - 1, fence[1] + 1))
             overlapping_fences = {(fence[0] - 1, fence[1], 'H'), (fence[0] + 1, fence[1], 'V'),
-                                  (fence[0] - 1, fence[1] + 1, 'V')}
-
+                                  (fence[0] - 1, fence[1], 'V')}
+        print(f"overlapping_fences: {overlapping_fences}")
         self.legal_fences -= overlapping_fences
 
-        # remove all fences that would make the other side unreachable for both players
-
+        new_legal_fences = set()
         for fence in self.legal_fences:
-            possible_board = self.board
+            possible_board = copy.deepcopy(self.board)
             if fence[2] == "H":
                 possible_board.remove_edge((fence[0], fence[1]), (fence[0] + 1, fence[1]))
                 possible_board.remove_edge((fence[0], fence[1] + 1), (fence[0] + 1, fence[1] + 1))
             else:
                 possible_board.remove_edge((fence[0], fence[1]), (fence[0], fence[1] + 1))
                 possible_board.remove_edge((fence[0] - 1, fence[1]), (fence[0] - 1, fence[1] + 1))
-            if not (possible_board.is_reachable(self.player1_pos, 8) and
+            if (possible_board.is_reachable(self.player1_pos, 8) and
                     possible_board.is_reachable(self.player2_pos, 0)):
-                self.legal_fences.remove(fence)
+                new_legal_fences.add(fence)
+        self.legal_fences = new_legal_fences
 
-    def legal_pawn_moves(self) -> list:
+    def legal_pawn_moves(self, current_player_pos, opponent_pos) -> list:
         """
         Returns legal pawn moves according to the Quoridor rules
         """
         legal_pawn_moves = []
 
-        legal_pawn_moves.extend(node.key for node in self.board.nodes[self.player1_pos].connected_to)
+        legal_pawn_moves.extend(node.key for node in self.board.nodes[current_player_pos].connected_to)
 
-        if self.player2_pos in legal_pawn_moves:
-            legal_pawn_moves.remove(self.player2_pos)
-            player_2_connected = [node.key for node in self.board.nodes[self.player2_pos].connected_to]
-            player_2_connected.remove(self.player1_pos)
+        if opponent_pos in legal_pawn_moves:
+            legal_pawn_moves.remove(opponent_pos)
+            opponent_connected = [node.key for node in self.board.nodes[opponent_pos].connected_to]
+            opponent_connected.remove(current_player_pos)
 
             # zelfde rij
-            if self.player1_pos[0] == self.player2_pos[0]:
-                if self.player1_pos[1] > self.player2_pos[1]:
-                    pos_behind = (self.player2_pos[0], self.player2_pos[1] - 1)
+            if current_player_pos[0] == opponent_pos[0]:
+                if current_player_pos[1] > opponent_pos[1]:
+                    pos_behind = (opponent_pos[0], opponent_pos[1] - 1)
                 else:
-                    pos_behind = (self.player2_pos[0], self.player2_pos[1] + 1)
+                    pos_behind = (opponent_pos[0], opponent_pos[1] + 1)
             # zelfde column
             else:
-                if self.player1_pos[0] > self.player2_pos[0]:
-                    pos_behind = (self.player2_pos[0] - 1, self.player2_pos[1])
+                if current_player_pos[0] > opponent_pos[0]:
+                    pos_behind = (opponent_pos[0] - 1, opponent_pos[1])
                 else:
-                    pos_behind = (self.player2_pos[0] + 1, self.player2_pos[1])
+                    pos_behind = (opponent_pos[0] + 1, opponent_pos[1])
 
-            if pos_behind in player_2_connected:
-                player_2_connected = [pos_behind]
+            if pos_behind in opponent_connected:
+                opponent_connected = [pos_behind]
 
-            legal_pawn_moves.extend(player_2_connected)
+            legal_pawn_moves.extend(opponent_connected)
 
         return legal_pawn_moves
 
-    def legal_actions(self):
+    def legal_actions(self, current_player_pos, opponent_pos):
         """
         Returns a dictionary of all legal actions:
         pawn_moves: all pawn moves
         fence_moves: all legal fence moves.
         """
-        return {"pawn_moves": self.legal_pawn_moves(), "fence_moves": self.legal_fences}
+        return {"pawn_moves": self.legal_pawn_moves(current_player_pos, opponent_pos), "fence_moves": self.legal_fences}
 
     def current_state(self):
         """
@@ -179,10 +185,5 @@ class Quoridor:
         pass
 
 
+game = Quoridor((9, 9), "poep")
 
-game = Quoridor(9, 9)
-print(game.board.is_reachable(game.player1_pos, 8))
-print(game.legal_actions())
-
-
-game.print_internal_board()

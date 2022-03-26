@@ -14,7 +14,8 @@ class Node:
         self.connected_to.add(connected_node)
 
     def delete_connected_node(self, connected_node):
-        self.connected_to.remove(connected_node)
+        if connected_node in self.connected_to:
+            self.connected_to.remove(connected_node)
 
 
 class Graph:

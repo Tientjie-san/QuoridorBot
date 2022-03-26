@@ -1,3 +1,6 @@
+from collections import deque
+
+
 class Node:
     """a node represents a position on the quoridor board"""
     def __init__(self, key: tuple):
@@ -40,17 +43,36 @@ class Graph:
         self.nodes[node1].delete_connected_node(self.nodes[node2])
         self.nodes[node2].delete_connected_node(self.nodes[node1])
 
-    def is_connected(self, pos, goal_side) -> bool:
-        pass
+    def is_reachable(self, pos, goal_side) -> bool:
+        """checks if a goal side is reachable for player given the position of the player"""
+
+        # Mark all the vertices as not visited
+        visited = set()
+
+        # Create a queue for BFS
+        queue = deque([])
+
+        # Mark the source node as visited and enqueue it
+        queue.append(self.nodes[pos])
+        visited.add(pos)
+
+        while queue:
+
+            # Dequeue a vertex from queue
+            node = queue.pop()
+
+            # If this adjacent node is the destination node,
+            # then return true
+            if node.key[0] == goal_side:
+                return True
+
+            #  Else, continue to do BFS
+            for node in self.nodes[node.key].connected_to:
+                if node not in visited:
+                    queue.append(node)
+                    visited.add(node)
+        # If BFS is complete without visited d
+        return False
 
     def shortest_path(self, pos, goal_side):
         pass
-
-# g = Graph()
-# g.add_node((0, 0))
-# g.add_edge((0, 0), (0, 1))
-# for node in g.nodes.values():
-#     print(node)
-# g.remove_edge((0,0), (0,1))
-# for node in g.nodes.values():
-#     print(node)

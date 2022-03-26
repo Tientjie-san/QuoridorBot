@@ -6,20 +6,32 @@ class Quoridor:
 
     def __init__(self, board_shape: tuple, opponent_agent):
         self.board: Graph = Quoridor.create_board()
-        self.player1_pos = (4, 5)
-        self.player2_pos = (5, 5)
+        self.player1_pos = (0, 4)
+        self.player2_pos = (8, 4)
         self.player1_fences = 10
         self.player2_fences = 10
         self.fence_pos = []
+        self.legal_fences = self.init_possible_fences()
 
     def step(self, action):
         """returns new state and reward given current state and action"""
+        if len(action) == 2:
+            self.player1_pos = action
+            if action[0] == 8:
+                print("player 1 won the game")
 
-        pass
+        else:
+            self.add_fence(action)
+            self.player1_fences -= 1
+
+        #oppenents turn:
+        legal_actions = self.legal_actions()
+        self.render()
+        return
 
     def reset(self):
         """"Resets the Quoridor enviroment"""
-        pass
+        self.__init__()
 
     def close(self):
         """close pygame"""
@@ -27,7 +39,7 @@ class Quoridor:
 
     def render(self):
         """game vizualisation"""
-        pass
+        self.print_internal_board()
 
     def print_internal_board(self):
         for node in self.board.nodes.values():
@@ -46,10 +58,22 @@ class Quoridor:
             g.add_edge(node, (node[0] - 1, node[1]))
             g.add_edge(node, (node[0] + 1, node[1]))
 
-        # for i in range(9):
-        #     g.remove_edge((5, i), (6, i))
-
         return g
+
+    def init_possible_fences(self) -> set:
+        """returns all possible fences at the start of the game"""
+
+        fences = []
+        range_row_v_fence = range(1, 9)
+        range_row_h_fence = range(0, 8)
+        col_range = range(0, 8)
+
+        for j in col_range:
+            for i in range_row_v_fence:
+                fences.append((i, j, "V"))
+            for i in range_row_h_fence:
+                fences.append((i, j, "H"))
+        return set(fences)
 
     def add_fence(self, fence: tuple):
         """
@@ -60,13 +84,47 @@ class Quoridor:
 
         example: (2,2,H) would put the fence between (2,2) - (3,2) and between (2,3) - (3,3)
         example: (2,2,V) would put the fence between (2,2) - (2,3) and between (1,2) - (1,3)
+
+        Fence rules:
+        Fences can't overlap
+        Fences have to take up full squares
+        A fence cant be placed if it makes the opponent unable to reach the goal
         """
-        # check if fence to be placed overlaps, or violates the rule that the goal side has to be reachable.
-        pass
+        if fence not in self.legal_fences:
+            return "That's ILLEGAL"
 
-    def is_legal_fence(self, fence:tuple) -> bool:
+        self.fence_pos.append(fence)
 
+        # remove fence from legal fences
+        self.legal_fences.remove(fence)
 
+        # place the fence  and remove overlapping fences:
+        if fence[2] == "H":
+            self.board.remove_edge((fence[0], fence[1]), (fence[0] + 1, fence[1]))
+            self.board.remove_edge((fence[0], fence[1] + 1), (fence[0] + 1, fence[1] + 1))
+            overlapping_fences = {(fence[0], fence[1] - 1, 'H'), (fence[0], fence[1] + 1, 'H'),
+                                  (fence[0] + 1, fence[1], 'V')}
+        else:
+            self.board.remove_edge((fence[0], fence[1]), (fence[0], fence[1] + 1))
+            self.board.remove_edge((fence[0] - 1, fence[1]), (fence[0] - 1, fence[1] + 1))
+            overlapping_fences = {(fence[0] - 1, fence[1], 'H'), (fence[0] + 1, fence[1], 'V'),
+                                  (fence[0] - 1, fence[1] + 1, 'V')}
+
+        self.legal_fences -= overlapping_fences
+
+        # remove all fences that would make the other side unreachable for both players
+
+        for fence in self.legal_fences:
+            possible_board = self.board
+            if fence[2] == "H":
+                possible_board.remove_edge((fence[0], fence[1]), (fence[0] + 1, fence[1]))
+                possible_board.remove_edge((fence[0], fence[1] + 1), (fence[0] + 1, fence[1] + 1))
+            else:
+                possible_board.remove_edge((fence[0], fence[1]), (fence[0], fence[1] + 1))
+                possible_board.remove_edge((fence[0] - 1, fence[1]), (fence[0] - 1, fence[1] + 1))
+            if not (possible_board.is_reachable(self.player1_pos, 8) and
+                    possible_board.is_reachable(self.player2_pos, 0)):
+                self.legal_fences.remove(fence)
 
     def legal_pawn_moves(self) -> list:
         """
@@ -101,30 +159,13 @@ class Quoridor:
 
         return legal_pawn_moves
 
-    def legal_fences(self) -> list:
-        """"
-            Fence rules:
-            Fences can't overlap
-            Fences have to take up full squares
-            A fence cant be placed if it makes the opponent unable to reach the goal
-        """
-        fence_moves = []
-        for i in range(9):
-            possible_board = self.board
-            # add fence to possible board
-            # check if end is still reachable for both players
-            if possible_board.is_reachable(self.player1_pos, 0) and possible_board.is_reachable(self.player2_pos, 8):
-                fence_moves.append(1)
-
-        return fence_moves
-
     def legal_actions(self):
         """
         Returns a dictionary of all legal actions:
         pawn_moves: all pawn moves
         fence_moves: all legal fence moves.
         """
-        return {"pawn_moves": self.legal_pawn_moves(), "fence_moves": self.legal_fences()}
+        return {"pawn_moves": self.legal_pawn_moves(), "fence_moves": self.legal_fences}
 
     def current_state(self):
         """
@@ -138,7 +179,10 @@ class Quoridor:
         pass
 
 
+
 game = Quoridor(9, 9)
 print(game.board.is_reachable(game.player1_pos, 8))
 print(game.legal_actions())
+
+
 game.print_internal_board()

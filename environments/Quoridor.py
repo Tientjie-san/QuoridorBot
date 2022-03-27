@@ -1,62 +1,20 @@
 import random
 from .Graph import Graph
 import copy
+import gym
+from gym.spaces import Discrete, Dict, Tuple
 
 
 class Quoridor:
 
-    def __init__(self, board_shape: tuple, opponent_agent):
-        self.board: Graph = Quoridor.create_board()
+    def __init__(self):
+        self.board: Graph = self.create_board()
         self.player1_pos = (0, 4)
         self.player2_pos = (8, 4)
         self.player1_fences = 10
         self.player2_fences = 10
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
-        self.game_over = False
-        self.reward = 0
-
-    def step(self, action):
-        """returns new state and reward given current state and action"""
-        if len(action) == 2:
-            self.player1_pos = action
-            if action[0] == 8:
-                print("player 1 won the game")
-                self.reward = 10
-                self.game_over = True
-        else:
-            self.add_fence(action)
-            self.player1_fences -= 1
-
-
-        #oppenents turn:
-        legal_actions = self.legal_actions(self.player2_pos, self.player1_pos)
-        legal_actions = legal_actions['pawn_moves'].union(legal_actions['fence_moves'])
-        opp_action = random.choice(list(legal_actions))
-        if len(opp_action) == 2:
-            self.player2_pos = opp_action
-            if action[0] == 0:
-                print("player 2 won the game")
-                self.reward = -10
-                self.game_over = True
-
-        else:
-            self.add_fence(opp_action)
-            self.player2_fences -= 1
-        # self.render()
-        return self.current_state()
-
-    def reset(self):
-        """"Resets the Quoridor enviroment"""
-        self.__init__((9, 9), 1)
-
-    def close(self):
-        """close pygame"""
-        pass
-
-    def render(self):
-        """game vizualisation"""
-        self.print_internal_board()
 
     def print_internal_board(self):
         for node in self.board.nodes.values():
@@ -77,7 +35,8 @@ class Quoridor:
 
         return g
 
-    def init_possible_fences(self) -> set:
+    @staticmethod
+    def init_possible_fences() -> set:
         """returns all possible fences at the start of the game"""
 
         fences = []
@@ -143,7 +102,7 @@ class Quoridor:
                 new_legal_fences.add(fence)
         self.legal_fences = new_legal_fences
 
-    def legal_pawn_moves(self, current_player_pos, opponent_pos) -> list:
+    def legal_pawn_moves(self, current_player_pos, opponent_pos) -> set:
         """
         Returns legal pawn moves according to the Quoridor rules
         """
@@ -176,15 +135,94 @@ class Quoridor:
 
         return set(legal_pawn_moves)
 
-    def legal_actions(self, current_player_pos, opponent_pos):
+    def legal_actions(self, current_player_pos, opponent_pos, current_player_fences):
         """
-        Returns a dictionary of all legal actions:
-        pawn_moves: all pawn moves
-        fence_moves: all legal fence moves.
+        Returns a set of all legal actions
         """
-        return {"pawn_moves": self.legal_pawn_moves(current_player_pos, opponent_pos), "fence_moves": self.legal_fences}
+        if current_player_fences != 0:
+            return self.legal_pawn_moves(current_player_pos, opponent_pos).union(self.legal_fences)
+        return self.legal_pawn_moves(current_player_pos, opponent_pos)
 
-    def current_state(self):
+
+class MoveSpace(gym.spaces.Space):
+    def __init__(self, board):
+        self.board = board
+
+    def sample(self):
+        legal_actions = self.board.legal_actions(self.board.player1_pos, self.board.player2_pos,
+                                                 self.board.player1_fences)
+        return random.choice(list(legal_actions))
+
+
+
+class QuoridorEnv(gym.Env):
+
+    def __init__(self):
+        self.board: Quoridor = Quoridor()
+        super(QuoridorEnv, self).__init__()
+        self.game_over = False
+        self.reward = 0
+        self.turn = 1
+        self.observation_space = Dict({"pos1": Tuple((Discrete(9), Discrete(9))),
+                                       "pos2": Tuple((Discrete(9), Discrete(9))),
+                                       "fences1": Discrete(11),
+                                       "fences2": Discrete(11)})
+        self.action_space = MoveSpace(self.board)
+
+    def step(self, action: tuple):
+        """returns new state and reward given current state and action"""
+        if len(action) == 2:
+            self.board.player1_pos = action
+            if action[0] == 8:
+                print("player 1 won the game")
+                self.reward = 10
+                self.game_over = True
+        else:
+            self.board.add_fence(action)
+            self.board.player1_fences -= 1
+
+        #opponents turn:
+        legal_actions = self.board.legal_actions(self.board.player2_pos, self.board.player1_pos,
+                                                 self.board.player2_fences)
+        opp_action = random.choice(list(legal_actions))
+        if len(opp_action) == 2:
+            self.board.player2_pos = opp_action
+            if action[0] == 0:
+                print("player 2 won the game")
+                self.reward = -10
+                self.game_over = True
+
+        else:
+            self.board.add_fence(opp_action)
+            self.board.player2_fences -= 1
+        # self.render()
+
+        observation = self.observe()
+        reward = self.reward
+        done = self.game_over
+        info = self.observe()
+        self.turn += 1
+        info['turn'] = self.turn
+
+        return observation, reward, done, info
+
+    def reset(self):
+        """"Resets the Quoridor enviroment"""
+        self.board.__init__()
+        self.game_over = False
+        self.reward = 0
+        self.turn = 1
+        return self.observe()
+
+    def close(self):
+        """close pygame"""
+        pass
+
+    def render(self):
+        """game vizualisation"""
+        self.board.print_internal_board()
+
+    def observe(self):
         """
         returns given state, state is described with a dictionary containing the following information
         - pos1 : position player 1
@@ -196,11 +234,19 @@ class Quoridor:
         - reward: int
         """
         return {
-            "pos1": self.player1_pos,
-            "pos2": self.player2_pos,
-            "fences1": self.player1_fences,
-            "fences2": self.player2_fences,\
-            "fence_pos": self.fence_pos,
+            "pos1": self.board.player1_pos,
+            "pos2": self.board.player2_pos,
+            "fences1": self.board.player1_fences,
+            "fences2": self.board.player2_fences,
+            "fence_pos": self.board.fence_pos,
             "game_over": self.game_over,
-            "reward": self.reward
+            "reward": self.reward,
+            "legal_actions": self.board.legal_actions(self.board.player1_pos, self.board.player2_pos,
+                                                      self.board.player1_fences)
         }
+
+
+from stable_baselines3.common.env_checker import check_env
+
+env = QuoridorEnv()
+check_env(env)

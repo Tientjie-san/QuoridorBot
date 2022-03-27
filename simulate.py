@@ -1,4 +1,4 @@
-from environments.Quoridor import Quoridor
+from environments.Quoridor import QuoridorEnv
 
 
 
@@ -6,20 +6,20 @@ from environments.Quoridor import Quoridor
 """Load models"""
 
 
-""" """
 current_player = None
 best_player = None
 
 for i in range(1,4):
 
     print(f"Simulating game {i}")
-    quoriodor_env = Quoridor((9, 9), 1)
-    actions = quoriodor_env.legal_actions(quoriodor_env.player1_pos, quoriodor_env.player2_pos)
+    quoriodor_env = QuoridorEnv()
     game_over = False
-    print(quoriodor_env.current_state())
+    observation = quoriodor_env.reset()
+    print(observation)
 
     while not game_over:
-        actions = quoriodor_env.legal_actions(quoriodor_env.player1_pos, quoriodor_env.player2_pos)
+
+        actions = observation['legal_actions']
         print(actions)
         action = input().split(', ')
         if len(action) == 2:
@@ -27,11 +27,11 @@ for i in range(1,4):
         else:
             action = (int(action[0]), int(action[1]), action[2])
 
-        state = quoriodor_env.step(action)
-        print(state)
-        game_over = state["game_over"]
+        obs, reward, done, info = quoriodor_env.step(action)
+        print(obs)
+        game_over = done
 
     quoriodor_env.reset()
-    """ """
+
 
 

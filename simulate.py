@@ -10,9 +10,6 @@ from environments.Quoridor import Quoridor
 current_player = None
 best_player = None
 
-iteration = 0
-
-gamne_over = False
 for i in range(1,4):
 
     print(f"Simulating game {i}")

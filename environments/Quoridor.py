@@ -22,6 +22,7 @@ class Quoridor:
             self.player1_pos = action
             if action[0] == 8:
                 print("player 1 won the game")
+                self.reward = 10
                 self.game_over = True
         else:
             self.add_fence(action)
@@ -33,9 +34,10 @@ class Quoridor:
         legal_actions = legal_actions['pawn_moves'].union(legal_actions['fence_moves'])
         opp_action = random.choice(list(legal_actions))
         if len(opp_action) == 2:
-            self.player2_pos = action
+            self.player2_pos = opp_action
             if action[0] == 0:
                 print("player 2 won the game")
+                self.reward = -10
                 self.game_over = True
 
         else:

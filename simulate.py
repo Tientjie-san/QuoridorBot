@@ -20,7 +20,7 @@ for i in range(1,4):
     while not game_over:
 
         actions = observation['legal_actions']
-        print(actions)
+        # print(actions)
         action = input().split(', ')
         if len(action) == 2:
             action = tuple([int(ele) for ele in action])

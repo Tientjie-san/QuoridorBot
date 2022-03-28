@@ -11,8 +11,8 @@ class Quoridor:
         self.board: Graph = self.create_board()
         self.player1_pos = (0, 4)
         self.player2_pos = (8, 4)
-        self.player1_fences = 10
-        self.player2_fences = 10
+        self.player1_fences = 0
+        self.player2_fences = 1
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
 
@@ -173,7 +173,7 @@ class QuoridorEnv(gym.Env):
         """returns new state and reward given current state and action"""
         if len(action) == 2:
             self.board.player1_pos = action
-            if action[0] == 8:
+            if self.board.player1_pos[0] == 8:
                 print("player 1 won the game")
                 self.reward = 10
                 self.game_over = True
@@ -184,10 +184,11 @@ class QuoridorEnv(gym.Env):
         #opponents turn:
         legal_actions = self.board.legal_actions(self.board.player2_pos, self.board.player1_pos,
                                                  self.board.player2_fences)
+        print(legal_actions)
         opp_action = random.choice(list(legal_actions))
         if len(opp_action) == 2:
             self.board.player2_pos = opp_action
-            if action[0] == 0:
+            if self.board.player2_pos[0] == 0:
                 print("player 2 won the game")
                 self.reward = -10
                 self.game_over = True

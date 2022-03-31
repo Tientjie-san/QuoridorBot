@@ -1,4 +1,7 @@
-class HumanAgent:
+from .Agent import Agent
+
+
+class HumanAgent(Agent):
 
     def action(self, observation):
 

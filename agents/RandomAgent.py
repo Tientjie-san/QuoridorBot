@@ -1,7 +1,8 @@
 import random
+from .Agent import Agent
 
 
-class RandomAgent:
+class RandomAgent(Agent):
 
     def action(self, observation):
         print(f"Random Agent observation: {observation}")

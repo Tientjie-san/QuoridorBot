@@ -1,6 +1,5 @@
-from environments.Quoridor import QuoridorEnv
-from agents.HumanAgent import HumanAgent
-from agents.RandomAgent import RandomAgent
+from environments import QuoridorEnv
+from agents import HumanAgent, RandomAgent
 
 TOTAL_SIMULATIONS = 3
 

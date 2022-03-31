@@ -5,11 +5,12 @@ TOTAL_SIMULATIONS = 3
 
 
 def simulate(env, agent1, agent2):
+    env = env(agent2)
+    total_reward = 0
 
-    for i in range(1, TOTAL_SIMULATIONS+1):
+    for i in range(TOTAL_SIMULATIONS):
 
-        print(f"Simulating game {i}")
-        env = env(agent2)
+        print(f"Simulating game {i+1}")
         game_over = False
         obs = env.reset()
 
@@ -18,8 +19,10 @@ def simulate(env, agent1, agent2):
             action = agent1.action(obs)
             obs, reward, done, info = env.step(action)
             game_over = done
+            total_reward += reward
 
-        env.reset()
+    print(f"total reward: {total_reward}")
+    print(f"win_percentage: {total_reward/(TOTAL_SIMULATIONS*10) *100}%")
 
 
 simulate(QuoridorEnv, HumanAgent(), RandomAgent())

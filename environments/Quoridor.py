@@ -48,7 +48,7 @@ class QuoridorEnv(gym.Env):
             self.board.player2_pos = opp_action
             if self.board.player2_pos[0] == 0:
                 print("player 2 won the game")
-                self.reward = -10
+                self.reward = 0
                 self.game_over = True
 
         else:

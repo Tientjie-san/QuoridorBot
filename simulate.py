@@ -1,37 +1,26 @@
 from environments.Quoridor import QuoridorEnv
+from agents.HumanAgent import HumanAgent
+from agents.RandomAgent import RandomAgent
+
+TOTAL_SIMULATIONS = 3
 
 
+def simulate(env, agent1, agent2):
 
-""""Load memories"""
-"""Load models"""
+    for i in range(1, TOTAL_SIMULATIONS+1):
 
+        print(f"Simulating game {i}")
+        env = env(agent2)
+        game_over = False
+        obs = env.reset()
 
-current_player = None
-best_player = None
+        while not game_over:
 
-for i in range(1,4):
+            action = agent1.action(obs)
+            obs, reward, done, info = env.step(action)
+            game_over = done
 
-    print(f"Simulating game {i}")
-    quoriodor_env = QuoridorEnv()
-    game_over = False
-    observation = quoriodor_env.reset()
-    print(observation)
-
-    while not game_over:
-
-        actions = observation['legal_actions']
-        # print(actions)
-        action = input().split(', ')
-        if len(action) == 2:
-            action = tuple([int(ele) for ele in action])
-        else:
-            action = (int(action[0]), int(action[1]), action[2])
-
-        obs, reward, done, info = quoriodor_env.step(action)
-        print(obs)
-        game_over = done
-
-    quoriodor_env.reset()
+        env.reset()
 
 
-
+simulate(QuoridorEnv, HumanAgent(), RandomAgent())

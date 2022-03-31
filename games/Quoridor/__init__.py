@@ -1,0 +1,1 @@
+from .Quoridor import Quoridor

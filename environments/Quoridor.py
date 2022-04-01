@@ -18,61 +18,61 @@ class MoveSpace(gym.spaces.Space):
 class QuoridorEnv(gym.Env):
 
     def __init__(self, agent_env):
-        self.board: Quoridor = Quoridor()
+        self.quoridor: Quoridor = Quoridor()
         super(QuoridorEnv, self).__init__()
         self.agent_env = agent_env
-        self.game_over = False
+        self.done = False
         self.reward = 0
-        self.turn = 1
         self.observation_space = Dict({"pos1": Tuple((Discrete(9), Discrete(9))),
                                        "pos2": Tuple((Discrete(9), Discrete(9))),
                                        "fences1": Discrete(11),
                                        "fences2": Discrete(11)})
-        self.action_space = MoveSpace(self.board)
+        self.action_space = MoveSpace(self.quoridor)
 
     def step(self, action: tuple):
         """returns new state and reward given current state and action"""
         if len(action) == 2:
-            self.board.player1_pos = action
-            if self.board.player1_pos[0] == 8:
-                print("player 1 won the game")
+            game_over: bool = self.quoridor.move_pawn(action)
+            if game_over:
+                print("Your agent won the game")
                 self.reward = 10
-                self.game_over = True
+
+                self.done = True
+                observation = self.observe()
+                reward = self.reward
+                done = self.done
+                info = self.observe()
+
+                return observation, reward, done, info
         else:
-            self.board.add_fence(action)
-            self.board.player1_fences -= 1
+            self.quoridor.add_fence(action)
 
         # opponents turn:
 
-        opp_action = self.agent_env.action(self.observe(is_opp=True))
+        opp_action = self.agent_env.action(self.observe())
         if len(opp_action) == 2:
-            self.board.player2_pos = opp_action
-            if self.board.player2_pos[0] == 0:
-                print("player 2 won the game")
-                self.reward = 0
-                self.game_over = True
+            game_over: bool = self.quoridor.move_pawn(opp_action)
+            if game_over:
+                print("Opposing agent won the game")
+                self.reward = -10
+                self.done = True
 
         else:
-            self.board.add_fence(opp_action)
-            self.board.player2_fences -= 1
-        # self.render()
+            self.quoridor.add_fence(opp_action)
 
         observation = self.observe()
         reward = self.reward
-        done = self.game_over
+        done = self.done
         info = self.observe()
-        self.turn += 1
-        info['turn'] = self.turn
 
         return observation, reward, done, info
 
     def reset(self):
         """"Resets the Quoridor enviroment"""
         print("resetting env")
-        self.board.__init__()
-        self.game_over = False
+        self.quoridor.reset()
+        self.done = False
         self.reward = 0
-        self.turn = 1
         return self.observe()
 
     def close(self):
@@ -81,9 +81,9 @@ class QuoridorEnv(gym.Env):
 
     def render(self):
         """game vizualisation"""
-        self.board.print_internal_board()
+        self.quoridor.print_internal_board()
 
-    def observe(self, is_opp=False):
+    def observe(self):
         """
         returns given state, state is described with a dictionary containing the following information
         - pos1 : position player 1
@@ -95,21 +95,16 @@ class QuoridorEnv(gym.Env):
         - reward: int
         """
 
-        if is_opp:
-            legal_actions = self.board.legal_actions(self.board.player2_pos, self.board.player1_pos,
-                                                     self.board.player2_fences)
-        else:
-            legal_actions = self.board.legal_actions(self.board.player1_pos, self.board.player2_pos,
-                                                     self.board.player1_fences)
         return {
-            "pos1": self.board.player1_pos,
-            "pos2": self.board.player2_pos,
-            "fences1": self.board.player1_fences,
-            "fences2": self.board.player2_fences,
-            "fence_pos": self.board.fence_pos,
-            "game_over": self.game_over,
+            "agent_pos": self.quoridor.current_player.pos,
+            "opposing_agent_pos": self.quoridor.waiting_player.pos,
+            "fences1": self.quoridor.current_player.fences,
+            "fences2": self.quoridor.waiting_player.fences,
+            "fence_pos": self.quoridor.fence_pos,
+            "game_over": self.done,
             "reward": self.reward,
-            "legal_actions": legal_actions
+            "legal_actions": self.quoridor.legal_actions(),
+            "turn": int(self.quoridor.turn)
         }
 
 

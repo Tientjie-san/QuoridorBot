@@ -11,14 +11,13 @@ def simulate(env, agent1, agent2):
     for i in range(TOTAL_SIMULATIONS):
 
         print(f"Simulating game {i+1}")
-        game_over = False
+        done = False
         obs = env.reset()
 
-        while not game_over:
+        while not done:
 
             action = agent1.action(obs)
             obs, reward, done, info = env.step(action)
-            game_over = done
             total_reward += reward
 
     print(f"total reward: {total_reward}")

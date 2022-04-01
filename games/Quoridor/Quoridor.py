@@ -18,6 +18,7 @@ class Quoridor:
         self.waiting_player: Player = Player((8, 4), 0)
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
+        self.turn = 1
 
     def print_internal_board(self):
         for node in self.board.nodes.values():
@@ -54,8 +55,14 @@ class Quoridor:
                 fences.append((i, j, "H"))
         return set(fences)
 
-    def move_pawn(self, pos):
-        pass
+    def move_pawn(self, pos) -> bool:
+        if pos not in self.legal_pawn_moves():
+            raise ValueError("Illegal pawn move")
+        self.current_player.pos = pos
+        game_over = self.is_game_over()
+        self.switch_players()
+        self.turn += 0.5
+        return game_over
 
     def add_fence(self, fence: tuple):
         """
@@ -76,10 +83,11 @@ class Quoridor:
             raise ValueError('Illegal move, no fences left')
 
         if fence not in self.legal_fences:
-            return ValueError('Illegal move')
+            raise ValueError('Illegal move')
 
         self.fence_pos.append(fence)
         self.current_player.placed_fences.append(fence)
+        self.current_player.fences -= 1
 
         # remove fence from legal fences
         self.legal_fences.remove(fence)
@@ -112,6 +120,7 @@ class Quoridor:
                 new_legal_fences.add(fence)
         self.legal_fences = new_legal_fences
         self.switch_players()
+        self.turn += 0.5
 
     def legal_pawn_moves(self) -> set:
         """
@@ -146,6 +155,17 @@ class Quoridor:
 
         return set(legal_pawn_moves)
 
+    def is_game_over(self):
+        return self.current_player.pos[0] == self.current_player.goal
+
+    def reset(self):
+        self.board: Graph = self.create_board()
+        self.current_player: Player = Player((0, 4), 8)
+        self.waiting_player: Player = Player((8, 4), 0)
+        self.fence_pos = []
+        self.legal_fences = self.init_possible_fences()
+        self.turn = 1
+
     def legal_actions(self):
         """
         Returns a set of all legal actions
@@ -159,3 +179,4 @@ class Quoridor:
         waiting = self.current_player
         self.current_player = self.waiting_player
         self.waiting_player = waiting
+

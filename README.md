@@ -10,7 +10,8 @@ Reinforcement Learning environment for the game Quoridor
 
 ### How to start?
 
-run simulate.py
+To start program:
+    python simulate.py
 
 ### Notation that the game currently uses:
 - pawn_moves and positions are represented by a tuple (row, col) range is 0-8 (I start counting from below)
@@ -21,8 +22,14 @@ Picture to clarify notations:
 ![img.png](img.png)
 
 
+### pretty good to know:
+
+Currently by default the HumanAgent is used as the player Agent, so you will have to make moves urself via the terminal.
+commands are expected like this: 0, 1 or for fence {row}, {col}, {orientation}. To clarify without the brackets. If you dont follow the format program will crash :)
+
 TODO
-- Translation fucntion that converts my game notation to the "official" game notation: https://quoridorstrats.wordpress.com/notation/
+- Translation function that converts my game notation to the "official" game notation: https://quoridorstrats.wordpress.com/notation/
 - Environment compatible with OpenGym framework
+- Adding smart agents
 
 

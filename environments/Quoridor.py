@@ -5,6 +5,7 @@ from games.Quoridor import Quoridor
 
 
 class MoveSpace(gym.spaces.Space):
+
     def __init__(self, board):
         self.board = board
 
@@ -41,7 +42,7 @@ class QuoridorEnv(gym.Env):
             self.board.add_fence(action)
             self.board.player1_fences -= 1
 
-        #opponents turn:
+        # opponents turn:
 
         opp_action = self.agent_env.action(self.observe(is_opp=True))
         if len(opp_action) == 2:
@@ -96,10 +97,10 @@ class QuoridorEnv(gym.Env):
 
         if is_opp:
             legal_actions = self.board.legal_actions(self.board.player2_pos, self.board.player1_pos,
-                                                      self.board.player2_fences)
+                                                     self.board.player2_fences)
         else:
             legal_actions = self.board.legal_actions(self.board.player1_pos, self.board.player2_pos,
-                                                      self.board.player1_fences)
+                                                     self.board.player1_fences)
         return {
             "pos1": self.board.player1_pos,
             "pos2": self.board.player2_pos,

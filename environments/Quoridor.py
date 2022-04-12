@@ -28,9 +28,11 @@ class QuoridorEnv(gym.Env):
                                        "fences1": Discrete(11),
                                        "fences2": Discrete(11)})
         self.action_space = MoveSpace(self.quoridor)
+        self.history = []
 
     def step(self, action: tuple):
         """returns new state and reward given current state and action"""
+        self.history.append(action)
         if len(action) == 2:
             game_over: bool = self.quoridor.move_pawn(action)
             if game_over:
@@ -50,6 +52,7 @@ class QuoridorEnv(gym.Env):
         # opponents turn:
 
         opp_action = self.agent_env.action(self.observe())
+        self.history.append(opp_action)
         if len(opp_action) == 2:
             game_over: bool = self.quoridor.move_pawn(opp_action)
             if game_over:

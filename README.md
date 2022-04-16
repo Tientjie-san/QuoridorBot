@@ -5,6 +5,7 @@ Reinforcement Learning environment for the game Quoridor
 ## Functionalities implemented
 
 - simulating games
+- saving and replaying simulations
 - add own agent to simulate the game
 - add an agent to the environment
 

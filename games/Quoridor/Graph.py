@@ -27,6 +27,10 @@ class Graph:
     def __init__(self):
         self.nodes = dict()
 
+    def print_graph(self):
+        for node in self.nodes.values():
+            print(node)
+
     def add_node(self, key):
         if key not in self.nodes:
             self.nodes[key] = Node(key)

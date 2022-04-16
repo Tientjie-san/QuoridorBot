@@ -1,5 +1,5 @@
 from environments import QuoridorEnv
-from agents import HumanAgent, RandomAgent
+from agents import HumanAgent, RandomAgent, HeuristicAgent
 
 
 EPISODES = 3
@@ -31,4 +31,4 @@ def simulate(env, agent1, agent2):
     env.save(FILE_NAME)
 
 
-simulate(QuoridorEnv, RandomAgent(), RandomAgent())
+simulate(QuoridorEnv, HeuristicAgent(), RandomAgent())

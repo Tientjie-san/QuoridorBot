@@ -14,8 +14,10 @@ class Quoridor:
 
     def __init__(self):
         self.board: Graph = self.create_board()
-        self.current_player: Player = Player((0, 4), 8)
-        self.waiting_player: Player = Player((8, 4), 0)
+        self.player_1: Player = Player((0, 4), 8)
+        self.player_2: Player = Player((8, 4), 0)
+        self.current_player: Player = self.player_1
+        self.waiting_player: Player = self.player_2
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
         self.turn = 1
@@ -160,8 +162,10 @@ class Quoridor:
 
     def reset(self):
         self.board: Graph = self.create_board()
-        self.current_player: Player = Player((0, 4), 8)
-        self.waiting_player: Player = Player((8, 4), 0)
+        self.player_1: Player = Player((0, 4), 8)
+        self.player_2: Player = Player((8, 4), 0)
+        self.current_player: Player = self.player_1
+        self.waiting_player: Player = self.player_2
         self.fence_pos = []
         self.legal_fences = self.init_possible_fences()
         self.turn = 1

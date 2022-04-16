@@ -2,6 +2,8 @@ import random
 import gym
 from gym.spaces import Discrete, Dict, Tuple
 from games.Quoridor import Quoridor
+import copy
+import json
 
 
 class MoveSpace(gym.spaces.Space):
@@ -28,13 +30,15 @@ class QuoridorEnv(gym.Env):
                                        "fences1": Discrete(11),
                                        "fences2": Discrete(11)})
         self.action_space = MoveSpace(self.quoridor)
+        self.games = []
         self.history = []
+        self.record()
 
     def step(self, action: tuple):
         """returns new state and reward given current state and action"""
-        self.history.append(action)
         if len(action) == 2:
             game_over: bool = self.quoridor.move_pawn(action)
+            self.record()
             if game_over:
                 print("Your agent won the game")
                 self.reward = 10
@@ -44,24 +48,28 @@ class QuoridorEnv(gym.Env):
                 reward = self.reward
                 done = self.done
                 info = self.observe()
+                self.games.append(self.history)
 
                 return observation, reward, done, info
         else:
             self.quoridor.add_fence(action)
+            self.record()
 
         # opponents turn:
 
         opp_action = self.agent_env.action(self.observe())
-        self.history.append(opp_action)
         if len(opp_action) == 2:
             game_over: bool = self.quoridor.move_pawn(opp_action)
+            self.record()
             if game_over:
                 print("Opposing agent won the game")
                 self.reward = -10
                 self.done = True
+                self.games.append(self.history)
 
         else:
             self.quoridor.add_fence(opp_action)
+            self.record()
 
         observation = self.observe()
         reward = self.reward
@@ -74,6 +82,8 @@ class QuoridorEnv(gym.Env):
         """"Resets the Quoridor enviroment"""
         print("resetting env")
         self.quoridor.reset()
+        self.history = []
+        self.record()
         self.done = False
         self.reward = 0
         return self.observe()
@@ -109,6 +119,24 @@ class QuoridorEnv(gym.Env):
             "legal_actions": self.quoridor.legal_actions(),
             "turn": int(self.quoridor.turn)
         }
+
+    def record(self):
+        """updates history"""
+        board = {
+            "player1_pos": self.quoridor.player_1.pos,
+            "player2_pos": self.quoridor.player_2.pos,
+            "fences_pos": copy.deepcopy(self.quoridor.fence_pos),
+            "fences1": self.quoridor.player_1.fences,
+            "fences2": self.quoridor.player_2.fences,
+            "turn": self.quoridor.turn
+        }
+
+        self.history.append(board)
+
+    def save(self, filename):
+
+        with open(filename, 'w') as outfile:
+            json.dump(self.games, outfile)
 
 
 # from stable_baselines3.common.env_checker import check_env

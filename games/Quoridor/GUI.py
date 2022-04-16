@@ -25,12 +25,14 @@ pygame.display.set_caption("Quoridor")
 
 class GUI:
 
-    def __init__(self, history: list):
-        self.history = history
+    def __init__(self, games: list):
+        self.games = games
+        self.game_index = 0
+        self.current_game = games[self.game_index]
         self.turn = 1
-        self.player1_pos = history[self.turn-1]["player1_pos"]
-        self.player2_pos = history[self.turn-1]["player2_pos"]
-        self.fences_pos = history[self.turn-1]["fences_pos"]
+        self.player1_pos = self.current_game[self.turn-1]["player1_pos"]
+        self.player2_pos = self.current_game[self.turn-1]["player2_pos"]
+        self.fences_pos = self.current_game[self.turn-1]["fences_pos"]
 
 
     def draw_board(self):
@@ -67,11 +69,20 @@ class GUI:
 
             pygame.draw.line(WINDOW, color=FENCE_COLOR, start_pos = start_pos, end_pos = end_pos, width=FENCE_WIDTH)
 
-                
+    def switch_game(self, num: int):
+        self.game_index += num
+        if self.game_index < 0:
+            self.game_index = 0
+        if self.game_index >= len(self.games):
+            self.game_index = len(self.games) - 1
+        self.current_game = self.games[self.game_index]
+        self.turn = 1
+
+
     def update_positions(self):
-        self.player1_pos = self.history[self.turn-1]["player1_pos"]
-        self.player2_pos = self.history[self.turn-1]["player2_pos"]
-        self.fences_pos = self.history[self.turn-1]["fences_pos"]
+        self.player1_pos = self.current_game[self.turn-1]["player1_pos"]
+        self.player2_pos = self.current_game[self.turn-1]["player2_pos"]
+        self.fences_pos = self.current_game[self.turn-1]["fences_pos"]
 
 
     def run(self):
@@ -86,12 +97,16 @@ class GUI:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RIGHT:
                         print("right")
-                        if self.turn < len(self.history):
+                        if self.turn < len(self.current_game):
                             self.turn += 1
                     elif event.key == pygame.K_LEFT:
                         print("left")
                         if self.turn > 1:
                             self.turn -= 1
+                    elif event.key == pygame.K_DOWN:
+                        self.switch_game(-1)
+                    elif event.key == pygame.K_UP:
+                        self.switch_game(1)
                     print(self.turn)
                     self.update_positions()
 

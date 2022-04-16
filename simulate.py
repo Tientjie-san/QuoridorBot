@@ -1,7 +1,10 @@
 from environments import QuoridorEnv
 from agents import HumanAgent, RandomAgent
 
+
 EPISODES = 3
+# Set file name to store the simulation for replay
+FILE_NAME = "Simulations/simulation_1.json"
 
 
 def simulate(env, agent1, agent2):
@@ -25,6 +28,7 @@ def simulate(env, agent1, agent2):
                 
     print(f"total reward: {total_reward}")
     print(f"win_percentage: {win/EPISODES *100}%")
+    env.save(FILE_NAME)
 
 
 simulate(QuoridorEnv, RandomAgent(), RandomAgent())

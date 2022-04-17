@@ -4,7 +4,7 @@ from agents import HumanAgent, RandomAgent, HeuristicAgent
 
 EPISODES = 3
 # Set file name to store the simulation for replay
-FILE_NAME = "Simulations/simulation_1.json"
+FILE_NAME = "Simulations/shortest_path_vs_random2.json"
 
 
 def simulate(env, agent1, agent2):

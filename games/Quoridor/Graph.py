@@ -10,6 +10,9 @@ class Node:
     def __str__(self):
         return f"{self.key} connected to:  {[node.key for node in self.connected_to]}"
 
+    def __repr__(self):
+        return f"{self.key}"
+
     def add_connected_node(self, connected_node):
         self.connected_to.add(connected_node)
 
@@ -54,7 +57,7 @@ class Graph:
         # Mark all the vertices as not visited
         visited = set()
 
-        # Create a queue for BFS
+        # Create a queue for DFS
         queue = deque([])
 
         # Mark the source node as visited and enqueue it
@@ -71,12 +74,12 @@ class Graph:
             if node.key[0] == goal_side:
                 return True
 
-            #  Else, continue to do BFS
+            #  Else, continue to do DFS
             for node in self.nodes[node.key].connected_to:
                 if node not in visited:
                     queue.append(node)
                     visited.add(node)
-        # If BFS is complete without visited d
+        # If DFS is complete without visited d
         return False
 
     def shortest_path(self, pos, goal_side):

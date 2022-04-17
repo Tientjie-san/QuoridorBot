@@ -26,20 +26,20 @@ class HeuristicAgent(Agent):
                 self.goal = 0
                 self.opponent_goal = 8
 
-        board: Graph = observation['board']
+        quoridor = observation['game']
+        board: Graph = quoridor.board
         # add predecessor and distance attributes to nodes
 
         my_shortest_path = self.shortest_path(copy.deepcopy(board), observation['agent_pos'],
                                               observation['opposing_agent_pos'], self.goal)
-        # opponent_shortest_path = self.shortest_path(board, observation['opposing_agent_pos'], self.opponent_goal)
-        # if len(my_shortest_path) <= len(opponent_shortest_path):
+        opponent_shortest_path = self.shortest_path(copy.deepcopy(board), observation['opposing_agent_pos'],
+                                                    observation['opposing_agent_pos'], self.opponent_goal)
+        if len(my_shortest_path) <= len(opponent_shortest_path):
+            action = my_shortest_path[1]
             # follow the shortest path
-        print(my_shortest_path)
-        action = my_shortest_path[1]
-        print(action)
-        # else:
-        #     action = self.best_fence_move(opponent_shortest_path)
-        # print(f"Heuristic Agent observation: {observation}")
+        else:
+            # action = self.best_fence_move(opponent_shortest_path)
+            action = my_shortest_path[1]
         return action
 
     @staticmethod
@@ -95,9 +95,11 @@ class HeuristicAgent(Agent):
         return path
 
     @staticmethod
-    def best_fence_move(opponent_shortest_path) -> tuple:
+    def best_fence_move(opponent_shortest_path: list) -> tuple:
         """
         Returns most annoying fence move. The most annoying fence move maximizes the shortest path of the opponent.
         If there are equal annoying moves pick a random one.
         """
+        #TODO: Zet een fence neer zodat e
         pass
+

@@ -1,0 +1,5 @@
+shortest_path_vs_shortest_path.json: Heuristic Agent volgt de kortste pad.
+
+shortest_path_vs_shortest_path.json:
+Heuristic Agent, kijkt of ie de kortste pad is, zo ja dan volgt het de pat, nee
+dan legt ie een muur neer die de kortste pad van de tegenstander maximaliseert

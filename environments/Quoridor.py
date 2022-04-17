@@ -118,7 +118,7 @@ class QuoridorEnv(gym.Env):
             "reward": self.reward,
             "legal_actions": self.quoridor.legal_actions(),
             "turn": int(self.quoridor.turn),
-            "board": copy.deepcopy(self.quoridor.board)
+            "game": copy.deepcopy(self.quoridor)
         }
 
     def record(self):

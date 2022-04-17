@@ -4,7 +4,7 @@ from agents import HumanAgent, RandomAgent, HeuristicAgent
 
 EPISODES = 3
 # Set file name to store the simulation for replay
-FILE_NAME = "Simulations/shortest_path_vs_random2.json"
+FILE_NAME = "Simulations/shortest_path_vs_shortest_pathe.json"
 
 
 def simulate(env, agent1, agent2):
@@ -31,4 +31,4 @@ def simulate(env, agent1, agent2):
     env.save(FILE_NAME)
 
 
-simulate(QuoridorEnv, HeuristicAgent(), RandomAgent())
+simulate(QuoridorEnv, HeuristicAgent(), HeuristicAgent())
